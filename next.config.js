@@ -84,6 +84,19 @@ const nextConfig = {
     // 禁用可能导致worker问题的功能
     serverComponentsExternalPackages: ["@prisma/client"],
   },
+  // 优化输出文件追踪，排除不必要的文件
+  outputFileTracingExcludes: {
+    '*': [
+      'node_modules/@swc/core-linux-x64-gnu',
+      'node_modules/@swc/core-linux-x64-musl',
+      'node_modules/@esbuild/linux-x64',
+      '.git/**',
+      'backup-*/**',
+      'scripts/**',
+      'docs/progress/**',
+      'docs/status/**',
+    ],
+  },
 };
 
 // 禁用 TypeScript 检查以加快构建
