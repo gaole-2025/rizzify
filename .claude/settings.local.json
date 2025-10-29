@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(taskkill:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(for:*)",
+      "Bash(do:*)",
+      "Bash(done)",
+      "Bash(awk:*)",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npx supabase gen types typescript:*)",
+      "Bash(npm run dev)",
+      "Bash(netstat:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run build)",
+      "Bash(npx tsc:*)",
+      "Bash(wmic:*)",
+      "Bash(tskill:*)",
+      "Bash(npm run worker)",
+      "Bash(next dev:*)",
+      "Bash(npx next dev:*)",
+      "Bash(rsync:*)",
+      "Read(//d/aiweb/project/**)",
+      "Bash(robocopy:*)",
+      "Bash(timeout:*)",
+      "Bash(npm run db:validate)",
+      "Bash(npm run db:smoke)",
+      "Bash(xxd:*)",
+      "Bash(find:*)",
+      "Bash(echo:*)",
+      "Bash(npx prisma db pull:*)",
+      "Bash(ls:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

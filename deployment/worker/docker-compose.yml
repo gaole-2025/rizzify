@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  rizzify-worker:
+    build:
+      context: ../..
+      dockerfile: deployment/worker/Dockerfile
+    container_name: rizzify-worker
+    restart: unless-stopped
+    
+    # 环境变量文件
+    env_file:
+      - .env
+    
+    # 资源限制（重要！避免占用过多内存）
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'      # 最多使用 1 个 CPU 核心
+          memory: 512M     # 最多使用 512MB 内存
+        reservations:
+          cpus: '0.25'     # 预留 0.25 核心
+          memory: 256M     # 预留 256MB
+    
+    # 日志配置（避免日志占满磁盘）
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"    # 单个日志文件最大 10MB
+        max-file: "3"      # 最多保留 3 个日志文件
+    
+    # 网络配置（如果需要和其他服务通信）
+    # networks:
+    #   - rizzify-network
+
+# 如果需要和其他服务共享网络
+# networks:
+#   rizzify-network:
+#     external: true

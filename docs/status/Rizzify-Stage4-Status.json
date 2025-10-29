@@ -1,0 +1,74 @@
+{
+  "stage": "Stage 4",
+  "title": "Frontend w/ Mock & DB Mode Alignment",
+  "status": "completed",
+  "lastUpdated": "2025-10-09T14:25:56.252Z",
+  "pages": {
+    "dev_harness": {
+      "title": "Dev Harness Protection",
+      "status": "completed",
+      "mockReady": true,
+      "dbReady": true,
+      "description": "NODE_ENV protection with Dev Only labels, production limits"
+    },
+    "start": {
+      "title": "/start - Upload Flow",
+      "status": "completed",
+      "mockReady": true,
+      "dbReady": true,
+      "description": "Form validation, upload flow with MSW integration, enhanced error handling"
+    },
+    "gen_image": {
+      "title": "/gen-image - Plan Selection & Generation",
+      "status": "completed",
+      "mockReady": true,
+      "dbReady": true,
+      "description": "Plan selection, MSW payment, enhanced error handling for 400/402/429 responses"
+    },
+    "results": {
+      "title": "/results/:taskId - Four Section Display",
+      "status": "completed",
+      "mockReady": true,
+      "dbReady": true,
+      "description": "Four-column layout, enhanced error handling for batch operations and downloads"
+    },
+    "feedback": {
+      "title": "/feedback - Simplified Form",
+      "status": "completed",
+      "mockReady": true,
+      "dbReady": true,
+      "description": "Simplified feedback form with enhanced error handling for submissions and screenshots"
+    },
+    "login": {
+      "title": "/login - Google OAuth",
+      "status": "completed",
+      "mockReady": true,
+      "dbReady": true,
+      "description": "Google OAuth with clean UI, Mock/DB mode support"
+    },
+    "admin": {
+      "title": "/admin - Minimal Management",
+      "status": "completed",
+      "mockReady": true,
+      "dbReady": true,
+      "description": "KPI dashboard, user/task/payment/ticket lists, Mock/DB mode support"
+    }
+  },
+  "globalFeatures": {
+    "accessibility": {
+      "title": "Accessibility & Keyboard Navigation",
+      "status": "pending",
+      "description": "Focus order, keyboard controls, ESC to close, image navigation"
+    },
+    "loadingStates": {
+      "title": "Loading & Empty States",
+      "status": "pending",
+      "description": "Skeleton, Empty, Error, Retry states"
+    },
+    "consistency": {
+      "title": "UI & Copy Consistency",
+      "status": "pending",
+      "description": "Units, amounts, time ranges, UTC 02:00 refresh"
+    }
+  }
+}

@@ -1,0 +1,73 @@
+﻿{
+    "stage":  2,
+    "specVersion":  "Rizzify-Stage2-API-v1.yaml",
+    "date":  "2025-09-27",
+    "summary":  {
+                    "done":  5,
+                    "total":  6,
+                    "status":  "in_progress"
+                },
+    "items":  [
+                  {
+                      "id":  "Stage2-1",
+                      "title":  "MSW worker \u0026 handler scaffolding",
+                      "status":  "done",
+                      "notes":  "Worker bootstrap + centralised handlers covering uploads/generation/tasks/results/photos/feedback/payments/admin per spec"
+                  },
+                  {
+                      "id":  "Stage2-2",
+                      "title":  "/start - upload init \u0026 probe",
+                      "status":  "done",
+                      "notes":  "Form now calls uploadInit/uploadProbe, caches session info for downstream pages"
+                  },
+                  {
+                      "id":  "Stage2-3",
+                      "title":  "/gen-image - task create + polling",
+                      "status":  "done",
+                      "notes":  "/gen-image now mocks uploads:init -\u003e uploads:probe -\u003e generation/start and seeds queue status/session storage for downstream pages"
+                  },
+                  {
+                      "id":  "Stage2-4",
+                      "title":  "/results/:taskId - gallery from API",
+                      "status":  "done",
+                      "notes":  "Reads MSW results, download/delete endpoints, syncs latest taskId"
+                  },
+                  {
+                      "id":  "Stage2-5",
+                      "title":  "/feedback - API submission",
+                      "status":  "done",
+                      "notes":  "Uses submitFeedback + ErrorResponse parsing, handles 429 cooldown \u0026 Dev Harness states"
+                  },
+                  {
+                      "id":  "Stage2-6",
+                      "title":  "Admin dashboards",
+                      "status":  "todo",
+                      "notes":  "UI not yet wired to Stage2 admin APIs; still using static data"
+                  }
+              ],
+    "devHarness":  {
+                       "enabled":  true,
+                       "controls":  [
+                                        "routeHint",
+                                        "stateTabs",
+                                        "authMock",
+                                        "guardBypass",
+                                        "paymentMock",
+                                        "queueMock"
+                                    ],
+                       "gatedBy":  [
+                                       "NEXT_PUBLIC_ENABLE_DEVTOOLS",
+                                       "?dev=1|localStorage.rizzifyDev",
+                                       "NODE_ENV!==\u0027production\u0027"
+                                   ]
+                   },
+    "diffRequests":  [
+
+                     ],
+    "blockers":  [
+                     {
+                         "id":  "B-20250927-Lint",
+                         "description":  "npm run lint / build blocked by missing next binary; wait for dependencies"
+                     }
+                 ]
+}

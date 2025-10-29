@@ -1,0 +1,26 @@
+﻿{
+  "stage": 0,
+  "specVersion": "Rizzify-Stage0-PRD-v1.md",
+  "date": "2025-09-26",
+  "summary": { "done": 0, "total": 16, "status": "in_progress" },
+  "items": [
+    { "id": "R-001", "title": "首页与入口", "status": "todo" },
+    { "id": "R-002", "title": "/start 性别选择", "status": "todo" },
+    { "id": "R-003", "title": "上传 1 张照片", "status": "todo" },
+    { "id": "R-004", "title": "/gen-image 套餐选择", "status": "todo" },
+    { "id": "R-005", "title": "生成中状态", "status": "todo" },
+    { "id": "R-006", "title": "结果页", "status": "todo" },
+    { "id": "R-007", "title": "账户与配额", "status": "todo" },
+    { "id": "R-008", "title": "支付集成", "status": "todo" },
+    { "id": "R-009", "title": "管理后台", "status": "todo" },
+    { "id": "R-010", "title": "后台操作日志", "status": "todo" },
+    { "id": "R-011", "title": "用户反馈闭环", "status": "todo" },
+    { "id": "NFR-1", "title": "首屏白屏 < 2.5s", "status": "todo" },
+    { "id": "NFR-2", "title": "生成流程可恢复", "status": "todo" },
+    { "id": "NFR-3", "title": "错误可见与 skeleton", "status": "todo" },
+    { "id": "NFR-4", "title": "免费额度 UTC 02:00 重置", "status": "todo" },
+    { "id": "NFR-5", "title": "预计时长显示区间", "status": "todo" }
+  ],
+  "diffRequests": [],
+  "blockers": []
+}

@@ -1,0 +1,301 @@
+openapi: 3.1.0
+info:
+  title: Rizzify API
+  version: v1
+  description: >
+    Contract derived from Stage1 PageSpec (Login/Start/Gen-Image/Results/Feedback/Admin).
+servers:
+  - url: https://api.rizzify.local
+    description: Mock/Dev
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    TaskId: { in: path, name: taskId, required: true, schema: { type: string } }
+    PhotoId: { in: path, name: photoId, required: true, schema: { type: string } }
+    TicketId: { in: path, name: ticketId, required: true, schema: { type: string } }
+  schemas:
+    PlanCode: { type: string, enum: [free, start, pro] }
+    Gender:   { type: string, enum: [male, female] }
+    Section:  { type: string, enum: [uploaded, free, start, pro] }
+
+    ErrorObj:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+        retryAfterSeconds: { type: integer, minimum: 0, nullable: true }
+    ErrorResponse: { type: object, required: [error], properties: { error: { $ref: '#/components/schemas/ErrorObj' } } }
+
+    AuthUser:
+      type: object
+      required: [id, email]
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [user, admin], default: user }
+
+    UploadInitRequest:
+      type: object
+      required: [filename, contentType, sizeBytes]
+      properties:
+        filename: { type: string }
+        contentType: { type: string, enum: [image/jpeg, image/png] }
+        sizeBytes: { type: integer, minimum: 1 }
+    UploadInitResponse:
+      type: object
+      required: [fileId, uploadUrl]
+      properties:
+        fileId:   { type: string }
+        uploadUrl:{ type: string, format: uri }
+
+    UploadProbe:
+      type: object
+      required: [fileId, width, height, sizeMB]
+      properties:
+        fileId: { type: string }
+        width:  { type: integer, minimum: 1 }
+        height: { type: integer, minimum: 1 }
+        sizeMB: { type: number, minimum: 0 }
+
+    StartGenerationRequest:
+      type: object
+      required: [plan, gender, fileId, idempotencyKey]
+      properties:
+        plan: { $ref: '#/components/schemas/PlanCode' }
+        gender: { $ref: '#/components/schemas/Gender' }
+        fileId: { type: string }
+        idempotencyKey: { type: string, description: Client-generated UUID }
+    StartGenerationResponse:
+      type: object
+      required: [taskId]
+      properties:
+        taskId: { type: string }
+
+    TaskStatus:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [queued, running, done, error] }
+        etaSeconds: { type: integer, minimum: 0, nullable: true }
+        progress: { type: integer, minimum: 0, maximum: 100, nullable: true }
+        error: { $ref: '#/components/schemas/ErrorObj' }
+
+    Photo:
+      type: object
+      required: [id, url, section, createdAt]
+      properties:
+        id: { type: string }
+        url: { type: string, format: uri }
+        section: { $ref: '#/components/schemas/Section' }
+        createdAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time, nullable: true }
+
+    ResultsResponse:
+      type: object
+      required: [task, uploaded, free, start, pro]
+      properties:
+        task:
+          type: object
+          required: [id, createdAt, plan, total]
+          properties:
+            id: { type: string }
+            createdAt: { type: string, format: date-time }
+            plan: { $ref: '#/components/schemas/PlanCode' }
+            total: { type: integer, minimum: 0 }
+        uploaded: { type: array, items: { $ref: '#/components/schemas/Photo' } }
+        free:     { type: array, items: { $ref: '#/components/schemas/Photo' } }
+        start:    { type: array, items: { $ref: '#/components/schemas/Photo' } }
+        pro:      { type: array, items: { $ref: '#/components/schemas/Photo' } }
+
+    DownloadLink:
+      type: object
+      required: [url, filename]
+      properties:
+        url: { type: string, format: uri }
+        filename: { type: string }
+
+    FeedbackSubmitRequest:
+      type: object
+      required: [recentTaskId, message]
+      properties:
+        recentTaskId: { type: string }
+        message: { type: string, minLength: 10, maxLength: 500 }
+        screenshots: { type: array, maxItems: 3, items: { type: string, format: uri } }
+        email: { type: string, format: email, nullable: true }
+    FeedbackSubmitResponse:
+      type: object
+      required: [ticketId]
+      properties:
+        ticketId: { type: string, example: F-20250924-001 }
+
+    KPI:
+      type: object
+      properties:
+        usersTotal: { type: integer }
+        usersToday: { type: integer }
+        tasksActive:{ type: integer }
+        failRatePct:{ type: number }
+        revenueUSD: { type: number, nullable: true }
+
+    AdminUserRow:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string }
+        plan: { $ref: '#/components/schemas/PlanCode' }
+        orders: { type: integer }
+        tasks: { type: integer }
+        failedTasks: { type: integer }
+        createdAt: { type: string, format: date-time }
+
+    AdminTaskRow:
+      type: object
+      properties:
+        id: { type: string }
+        userEmail: { type: string }
+        plan: { $ref: '#/components/schemas/PlanCode' }
+        status: { type: string, enum: [queued, running, done, error] }
+        createdAt: { type: string, format: date-time }
+        completedAt: { type: string, format: date-time, nullable: true }
+        errorCode: { type: string, nullable: true }
+
+    AdminPaymentRow:
+      type: object
+      properties:
+        id: { type: string }
+        userEmail: { type: string }
+        plan: { type: string, enum: [start, pro] }
+        amount: { type: number }
+        currency: { type: string, enum: [USD] }
+        provider: { type: string, enum: [creem, stripe] }
+        status: { type: string, enum: [succeeded, failed, refunded] }
+        createdAt: { type: string, format: date-time }
+
+    AdminTicketRow:
+      type: object
+      properties:
+        id: { type: string }
+        userEmail: { type: string }
+        recentTaskId: { type: string }
+        message: { type: string }
+        screenshotUrls: { type: array, items: { type: string, format: uri } }
+        status: { type: string, enum: [new, in_progress, resolved, rejected] }
+        createdAt: { type: string, format: date-time }
+
+    TicketStatusChangeRequest:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [new, in_progress, resolved, rejected] }
+        note: { type: string, nullable: true }
+
+    PaymentSessionRequest:
+      type: object
+      required: [plan]
+      properties:
+        plan: { $ref: '#/components/schemas/PlanCode' }
+    PaymentSessionResponse:
+      type: object
+      required: [clientSecret]
+      properties:
+        clientSecret: { type: string }
+
+paths:
+  /me:
+    get:
+      summary: Current user
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AuthUser' } } } }
+
+  /uploads:init:
+    post:
+      summary: Init upload (pre-signed URL)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UploadInitRequest' } } } }
+      responses:   { '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/UploadInitResponse' } } } } }
+  /uploads:probe:
+    post:
+      summary: Report client-side probe (dimensions/size)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UploadProbe' } } } }
+      responses:   { '204': { description: Accepted } }
+
+  /generation/start:
+    post:
+      summary: Start a generation task
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/StartGenerationRequest' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/StartGenerationResponse' } } } }
+        '409': { description: Duplicate idempotencyKey, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+
+  /tasks/{taskId}:
+    get:
+      summary: Poll task status
+      parameters: [ { $ref: '#/components/parameters/TaskId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/TaskStatus' } } } }
+
+  /tasks/{taskId}/results:
+    get:
+      summary: Get task results (partitioned: uploaded/free/start/pro)
+      parameters: [ { $ref: '#/components/parameters/TaskId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ResultsResponse' } } } }
+
+  /photos/{photoId}/download:
+    get:
+      summary: Get a pre-signed download URL
+      parameters: [ { $ref: '#/components/parameters/PhotoId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/DownloadLink' } } } }
+  /photos/{photoId}/delete:
+    post:
+      summary: Delete a photo (revoke public link immediately)
+      parameters: [ { $ref: '#/components/parameters/PhotoId' } ]
+      responses: { '204': { description: Deleted } }
+
+  /feedback:
+    post:
+      summary: Submit feedback (server links to most recent task)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/FeedbackSubmitRequest' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/FeedbackSubmitResponse' } } } }
+        '429': { description: Rate limited, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
+
+  /payments/session:
+    post:
+      summary: Create Creem/Stripe client secret for sheet
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/PaymentSessionRequest' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/PaymentSessionResponse' } } } }
+
+  /admin/kpi:
+    get: { summary: Admin KPI, responses: { '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/KPI' } } } } } }
+  /admin/users:
+    get: { summary: List users, responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/AdminUserRow' } } } } } } }
+  /admin/tasks:
+    get: { summary: List tasks, responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/AdminTaskRow' } } } } } } }
+  /admin/payments:
+    get: { summary: List payments, responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/AdminPaymentRow' } } } } } } }
+  /admin/tickets:
+    get: { summary: List tickets, responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/AdminTicketRow' } } } } } } }
+  /admin/tickets/{ticketId}/status:
+    post:
+      summary: Change ticket status (audited server-side)
+      parameters: [ { $ref: '#/components/parameters/TicketId' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TicketStatusChangeRequest' } } } }
+      responses: { '204': { description: Updated } }
+
+x-mock:
+  rules:
+    - path: /tasks/{taskId}
+      behavior: |
+        Return queued → running (progress 10..90, etaSeconds decreasing) → done in ~4 polls.
+    - path: /payments/session
+      behavior: |
+        Return a fake clientSecret like 'test_secret_123' for start/pro.
+    - path: /feedback
+      behavior: |
+        Enforce one submission per 60s by user/IP; otherwise 429 ErrorResponse.

@@ -1,0 +1,62 @@
+# 不需要复制到 Docker 镜像的文件
+
+# Node modules（会在容器内重新安装）
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js 构建产物（Worker 不需要）
+.next/
+out/
+build/
+
+# 开发文件
+.git/
+.gitignore
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 测试文件
+coverage/
+.nyc_output/
+**/__tests__/
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+
+# 环境变量（会单独挂载）
+.env
+.env.local
+.env.*.local
+
+# 日志
+logs/
+*.log
+
+# 临时文件
+tmp/
+temp/
+.cache/
+
+# 文档
+README.md
+docs/*.md
+*.md
+
+# 部署文件
+deployment/
+docker-compose*.yml
+Dockerfile*
+
+# 脚本（除了必要的）
+scripts/test-*.ts
+scripts/*-test.ts
+
+# 备份
+backup*/
+*.backup

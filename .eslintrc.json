@@ -1,0 +1,16 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "ignorePatterns": [
+    "app/test-state-recovery/**",
+    "app/(flow)/results/backup-taskId/**",
+    "app/debug-auth/**",
+    "app/(flow)/admin/**",
+    "app/api/**"
+  ],
+  "rules": {
+    "react/no-unescaped-entities": "off",
+    "@next/next/no-img-element": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "import/no-anonymous-default-export": "off"
+  }
+}

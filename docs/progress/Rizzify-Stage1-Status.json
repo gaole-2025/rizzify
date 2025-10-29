@@ -1,0 +1,78 @@
+{
+    "stage": 1,
+    "specVersion": "Rizzify-Stage1-PageSpec-v1.md",
+    "date": "2025-09-26",
+    "summary": {
+        "done": 8,
+        "total": 8,
+        "status": "done"
+    },
+    "items": [
+        {
+            "id": "PageSpec-0",
+            "title": "Global header & layout",
+            "status": "done"
+        },
+        {
+            "id": "PageSpec-1",
+            "title": "/login interactions",
+            "status": "done"
+        },
+        {
+            "id": "PageSpec-2",
+            "title": "/start gender + upload",
+            "status": "done"
+        },
+        {
+            "id": "PageSpec-3",
+            "title": "/gen-image plans & processing",
+            "status": "done",
+            "notes": "Reworked to Stage1 Sec.3 single-card flow (Free auto start, Creem sheet -> processing)"
+        },
+        {
+            "id": "PageSpec-4",
+            "title": "/results/:taskId gallery",
+            "status": "done",
+            "notes": "Updated to Stage1 Sec.4 partition layout (nav, toolbars, preview drawer, expiry handling)"
+        },
+        {
+            "id": "PageSpec-5",
+            "title": "/feedback submission",
+            "status": "done",
+            "notes": "Updated to Stage1 Sec.5 minimal form (message, screenshots, email, rate limit)"
+        },
+        {
+            "id": "PageSpec-6",
+            "title": "Admin dashboards",
+            "status": "done"
+        },
+        {
+            "id": "PageSpec-8",
+            "title": "Shared components",
+            "status": "done"
+        }
+    ],
+    "devHarness": {
+        "enabled": true,
+        "controls": [
+            "routeHint",
+            "stateTabs",
+            "authMock",
+            "guardBypass",
+            "paymentMock",
+            "queueMock"
+        ],
+        "gatedBy": [
+            "NEXT_PUBLIC_ENABLE_DEVTOOLS",
+            "?dev=1|localStorage.rizzifyDev",
+            "NODE_ENV!=='production'"
+        ]
+    },
+    "diffRequests": [],
+    "blockers": [
+        {
+            "id": "B-20250926-Stage1-Lint",
+            "description": "pnpm lint fails (missing node_modules/next/dist/bin/next); waiting for dependencies"
+        }
+    ]
+}

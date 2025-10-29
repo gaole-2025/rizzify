@@ -1,0 +1,113 @@
+{
+  "stage": 3,
+  "specVersion": "Rizzify-Stage3-DataModel-v1.md",
+  "date": "2025-01-09",
+  "summary": {
+    "done": 10,
+    "total": 10,
+    "status": "done"
+  },
+  "enums": true,
+  "models": ["User", "Upload", "Task", "Photo", "Payment", "FeedbackTicket", "AuditLog", "DailyQuota"],
+  "repos": {
+    "users": true,
+    "uploads": true,
+    "tasks": true,
+    "photos": true,
+    "payments": true,
+    "tickets": true,
+    "audit": true,
+    "quotas": true
+  },
+  "scripts": {
+    "smoke": true,
+    "seed": true,
+    "cleanup": true,
+    "rollover": true
+  },
+  "frontendDbMode": {
+    "results": true,
+    "feedback": true
+  },
+  "items": [
+    {
+      "id": "Stage3-1",
+      "title": "Prisma Client 实例",
+      "status": "done",
+      "location": "src/db/client.ts"
+    },
+    {
+      "id": "Stage3-2",
+      "title": "仓库层（8个repo文件）",
+      "status": "done",
+      "location": "src/db/repo/*.ts"
+    },
+    {
+      "id": "Stage3-3",
+      "title": "冒烟测试脚本",
+      "status": "done",
+      "location": "scripts/db-smoke-test.ts"
+    },
+    {
+      "id": "Stage3-4",
+      "title": "种子数据脚本",
+      "status": "done",
+      "location": "scripts/seed.ts"
+    },
+    {
+      "id": "Stage3-5",
+      "title": "清理过期照片脚本",
+      "status": "done",
+      "location": "scripts/cleanup-expired-photos.ts"
+    },
+    {
+      "id": "Stage3-6",
+      "title": "额度结转脚本",
+      "status": "done",
+      "location": "scripts/quotas-rollover.ts"
+    },
+    {
+      "id": "Stage3-7",
+      "title": "Dev Harness数据源切换",
+      "status": "done",
+      "location": "components/dev/DevToolbar.tsx"
+    },
+    {
+      "id": "Stage3-8",
+      "title": "/results/:taskId DB模式",
+      "status": "done",
+      "location": "app/(flow)/results/[taskId]/page.tsx"
+    },
+    {
+      "id": "Stage3-9",
+      "title": "/feedback DB模式",
+      "status": "done",
+      "location": "app/(flow)/feedback/page.tsx"
+    },
+    {
+      "id": "Stage3-10",
+      "title": "package.json数据库脚本",
+      "status": "done",
+      "location": "package.json"
+    }
+  ],
+  "devHarness": {
+    "enabled": true,
+    "controls": [
+      "routeHint",
+      "stateTabs",
+      "authMock",
+      "guardBypass",
+      "paymentMock",
+      "queueMock",
+      "dataSource"
+    ],
+    "gatedBy": [
+      "NEXT_PUBLIC_ENABLE_DEVTOOLS",
+      "?dev=1|localStorage.rizzifyDev",
+      "NODE_ENV!=='production'"
+    ]
+  },
+  "diffRequests": [],
+  "blockers": []
+}

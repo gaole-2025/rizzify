@@ -1,0 +1,142 @@
+// db/prisma.schema
+datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+generator client { provider = "prisma-client-js" }
+
+enum Plan { free start pro }
+enum Gender { male female }
+enum TaskStatus { queued running done error }
+enum Section { uploaded free start pro }
+enum PayStatus { pending succeeded failed refunded }
+enum TicketStatus { new in_progress resolved rejected }
+
+model User {
+  id         String  @id @default(uuid())
+  email      String  @unique
+  name       String?
+  avatarUrl  String?
+  authProv   String  @default("google")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  Upload     Upload[]
+  Task       Task[]
+  Payment    Payment[]
+  Ticket     FeedbackTicket[]
+  Quota      DailyQuota[]
+  Audit      AuditLog[] @relation("actor")
+}
+
+model Upload {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filename    String
+  contentType String
+  sizeBytes   BigInt
+  width       Int
+  height      Int
+  objectKey   String
+  createdAt   DateTime @default(now())
+  Task        Task?
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model Task {
+  id             String     @id @default(uuid())
+  userId         String
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  uploadId       String
+  upload         Upload     @relation(fields: [uploadId], references: [id], onDelete: Restrict)
+  plan           Plan
+  gender         Gender
+  status         TaskStatus
+  progress       Int?
+  etaSeconds     Int?
+  errorCode      String?
+  errorMessage   String?
+  createdAt      DateTime   @default(now())
+  startedAt      DateTime?
+  completedAt    DateTime?
+  idempotencyKey String?
+
+  photos         Photo[]
+  audits         AuditLog[] @relation("taskAudit")
+
+  @@unique([userId, idempotencyKey])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status, createdAt(sort: Desc)])
+}
+
+model Photo {
+  id          String   @id @default(uuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  section     Section
+  objectKey   String
+  originalName String?
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+  deletedAt   DateTime?
+
+  @@index([taskId, section, createdAt(sort: Desc)])
+  @@index([expiresAt])
+  @@index([deletedAt])
+}
+
+model Payment {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan       Plan
+  amountUsd  Decimal  @db.Decimal(10,2)
+  provider   String
+  status     PayStatus
+  providerRef String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status])
+}
+
+model FeedbackTicket {
+  id            String   @id    // 形如 F-YYYYMMDD-###
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recentTaskId  String?
+  recentTask    Task?    @relation(fields: [recentTaskId], references: [id], onDelete: SetNull)
+  message       String
+  screenshotUrls String[] @db.Text
+  email         String?
+  status        TicketStatus @default(new)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status, createdAt(sort: Desc)])
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  actorUserId  String?
+  actor        User?    @relation("actor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  action       String   // ticket_status_changed | ticket_note_added | task_refund | ...
+  targetType   String   // ticket | task | payment
+  targetId     String
+  note         String?
+  createdAt    DateTime @default(now())
+
+  // 可选：与 Task 的反向关系，方便查
+  task         Task?    @relation("taskAudit", fields: [targetId], references: [id])
+  @@index([targetType, targetId, createdAt(sort: Desc)])
+}
+
+model DailyQuota {
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayUtc    DateTime @db.Date
+  usedCount Int     @default(0)
+
+  @@id([userId, dayUtc])
+}

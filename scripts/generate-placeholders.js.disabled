@@ -1,0 +1,90 @@
+/**
+ * 生成占位符模板图片
+ * 使用Canvas API创建简单的占位符图片
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { createCanvas, loadImage } = require('canvas');
+
+/**
+ * 创建占位符图片
+ */
+async function createPlaceholderImage(filename, outputPath, gender, style) {
+  const canvas = createCanvas(1024, 1024);
+  const ctx = canvas.getContext('2d');
+
+  // 设置背景颜色
+  ctx.fillStyle = gender === 'male' ? '#4A90E2' : '#E91E63';
+  ctx.fillRect(0, 0, 1024, 1024);
+
+  // 添加文字
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 48px Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // 主标题
+  ctx.fillText(`${gender.toUpperCase()} ${style.toUpperCase()}`, 512, 480);
+
+  // 副标题
+  ctx.font = '32px Arial, sans-serif';
+  ctx.fillText(filename, 512, 540);
+
+  // 保存为PNG文件
+  const filePath = path.join(outputPath, filename);
+  const buffer = canvas.toBuffer('image/jpeg');
+  fs.writeFileSync(filePath, buffer);
+  console.log(`✅ Created placeholder: ${filePath}`);
+}
+
+/**
+ * 生成所有占位符图片
+ */
+function generateAllPlaceholders() {
+  const basePath = 'public/templates';
+
+  console.log('🎨 Generating placeholder template images...');
+
+  // Male templates
+  const malePath = path.join(basePath, 'male', 'classic');
+  if (!fs.existsSync(malePath)) {
+    fs.mkdirSync(malePath, { recursive: true });
+  }
+
+  for (let i = 1; i <= 5; i++) {
+    const filename = `${String(i).padStart(3, '0')}.jpg`;
+    createPlaceholderImage(filename, malePath, 'male', 'classic');
+  }
+
+  // Female templates
+  const femalePath = path.join(basePath, 'female', 'classic');
+  if (!fs.existsSync(femalePath)) {
+    fs.mkdirSync(femalePath, { recursive: true });
+  }
+
+  for (let i = 1; i <= 5; i++) {
+    const filename = `${String(i).padStart(3, '0')}.jpg`;
+    createPlaceholderImage(filename, femalePath, 'female', 'classic');
+  }
+
+  console.log('✅ All placeholder templates generated successfully!');
+  console.log('\n📋 Template structure:');
+  console.log('public/templates/');
+  console.log('├── male/');
+  console.log('│   └── classic/');
+  console.log('│       ├── 001.jpg');
+  console.log('│       ├── 002.jpg');
+  console.log('│       ├── 003.jpg');
+  console.log('│       ├── 004.jpg');
+  console.log('│       └── 005.jpg');
+  console.log('└── female/');
+  console.log('    └── classic/');
+  console.log('        ├── 001.jpg');
+  console.log('        ├── 002.jpg');
+  console.log('        ├── 003.jpg');
+  console.log('        ├── 004.jpg');
+  console.log('        └── 005.jpg');
+}
+
+generateAllPlaceholders();
