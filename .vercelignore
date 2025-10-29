@@ -1,0 +1,17 @@
+# Backups
+backup-*/
+
+# Archives
+*.tar.gz
+*.zip
+
+
+# Development files
+*.log
+.env.local
+.env.*.local
+
+# Test files
+scripts/test-*.js
+scripts/test-*.ts
+scripts/test-*.mjs

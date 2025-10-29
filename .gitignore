@@ -45,5 +45,3 @@ rizzify-worker.tar.gz
 # Large directories
 d:\aiweb\project\rizzify - 副本/
 
-# Large catalog files
-docs/catalog/*.json
