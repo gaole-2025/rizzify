@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://rizzify.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://rizzify.com"),
   alternates: {
     canonical: "/",
   },
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     title: "Rizzify - AI Dating Photos for Tinder, Bumble & Hinge",
     description:
       "Get 20-50 AI dating photos tuned for Tinder, Bumble, and Hinge. Usually ready in 10-15 minutes.",
-    url: "https://rizzify.com",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "https://rizzify.com",
     siteName: "Rizzify",
     images: [
       {

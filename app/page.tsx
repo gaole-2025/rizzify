@@ -37,7 +37,7 @@ export default function HomePage() {
       "price": "9.99",
       "priceCurrency": "USD",
       "availability": "https://schema.org/InStock",
-      "url": "https://rizzify.com/start"
+      "url": `${process.env.NEXT_PUBLIC_SITE_URL || "https://rizzify.com"}/start`
     }
   }
 
@@ -50,7 +50,7 @@ export default function HomePage() {
     "provider": {
       "@type": "Organization",
       "name": "Rizzify",
-      "url": "https://rizzify.com"
+      "url": process.env.NEXT_PUBLIC_SITE_URL || "https://rizzify.com"
     },
     "areaServed": "Worldwide",
     "hasOfferCatalog": {
