@@ -2,20 +2,5 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "regions": ["iad1"],
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
-    "DATABASE_URL": "@database_url",
-    "DIRECT_URL": "@direct_url",
-    "CLOUDFLARE_R2_ENDPOINT": "@r2_endpoint",
-    "CLOUDFLARE_R2_ACCESS_KEY_ID": "@r2_access_key_id",
-    "CLOUDFLARE_R2_SECRET_ACCESS_KEY": "@r2_secret_access_key",
-    "CLOUDFLARE_R2_TEMPLATES_BUCKET": "@r2_templates_bucket",
-    "CLOUDFLARE_R2_RESULTS_BUCKET": "@r2_results_bucket",
-    "APIORE_API_KEY": "@apiore_api_key",
-    "APIORE_API_URL": "@apiore_api_url",
-    "APIORE_MODEL": "@apiore_model"
-  }
+  "regions": ["iad1"]
 }
