@@ -33,3 +33,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 /lib/generated/prisma
+
+# Backups and archives
+backup-*/
+*.tar.gz
+*.zip
+
+# Worker files
+rizzify-worker.tar.gz
+
+# Large directories
+d:\aiweb\project\rizzify - 副本/
