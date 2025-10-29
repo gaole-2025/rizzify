@@ -83,9 +83,9 @@ const nextConfig = {
   experimental: {
     // 禁用可能导致worker问题的功能
     serverComponentsExternalPackages: ["@prisma/client"],
+    // 完全禁用输出文件追踪以避免栈溢出
+    outputFileTracingRoot: undefined,
   },
-  // 禁用输出文件追踪以避免构建时的栈溢出
-  output: 'standalone',
 };
 
 // 禁用 TypeScript 检查以加快构建
