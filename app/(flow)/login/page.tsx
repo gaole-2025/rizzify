@@ -60,8 +60,8 @@ export default function LoginPage() {
     try {
       // DB 模式：使用 Supabase Auth Google OAuth
       const supabase = getSupabaseBrowserClient();
-      const redirectTo =
-        process.env.AUTH_REDIRECT_URL || "http://localhost:3000/auth/callback";
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      const redirectTo = `${siteUrl}/auth/callback`;
 
       await supabase.auth.signInWithOAuth({
         provider: "google",

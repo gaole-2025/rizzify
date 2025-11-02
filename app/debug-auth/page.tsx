@@ -116,11 +116,12 @@ export default function DebugAuthPage() {
   const signIn = async () => {
     addResult('🔗 Initiating Google sign in...')
     const supabase = getSupabaseBrowserClient()
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'http://localhost:3000/auth/callback'
+        redirectTo: `${siteUrl}/auth/callback`
       }
     })
 
