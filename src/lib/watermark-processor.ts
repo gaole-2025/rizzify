@@ -9,30 +9,30 @@ export class WatermarkProcessor {
 
       console.log(`[WatermarkProcessor] Adding watermark to ${width}x${height} image`);
 
-      // 创建水印 SVG - 使用 Pango 兼容的文字渲染
-      const fontSize = Math.max(width, height) * 0.08;
+      // 创建水印 SVG - 使用简单的矩形和文字
+      const fontSize = Math.max(width, height) * 0.06;
       const watermarkSvg = Buffer.from(`
         <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-              <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.5"/>
-            </filter>
+            <style>
+              @font-face {
+                font-family: 'Arial';
+                src: local('Arial');
+              }
+            </style>
           </defs>
           <g transform="translate(${width / 2}, ${height / 2}) rotate(-45)">
+            <rect x="-200" y="-40" width="400" height="80" fill="none" stroke="white" stroke-width="2" opacity="0.2"/>
             <text 
               x="0" 
-              y="0" 
+              y="15" 
               text-anchor="middle" 
-              dominant-baseline="middle"
-              font-family="sans-serif"
+              font-family="Arial"
               font-size="${fontSize}"
               font-weight="bold"
               fill="white"
-              opacity="0.25"
-              filter="url(#shadow)"
-            >
-              Rizzify Free
-            </text>
+              opacity="0.2"
+            >Rizzify Free</text>
           </g>
         </svg>
       `);
