@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid'
 const R2_USER_DATA_DOMAIN =
   process.env.CLOUDFLARE_R2_USER_DATA_DOMAIN ||
   process.env.NEXT_PUBLIC_CLOUDFLARE_R2_USER_DATA_DOMAIN ||
-  'https://rizzify.org'
+  'https://cdn.rizzify.org'
 
 export async function POST(request: NextRequest) {
   try {

@@ -94,7 +94,7 @@ export async function GET(
         height: typeof photo.height === 'number' ? photo.height : undefined,
         sizeBytes: typeof photo.sizeBytes === 'string' ? Number(photo.sizeBytes) :
                    typeof photo.sizeBytes === 'number' ? photo.sizeBytes : 0,
-        url: `https://rizzify.org/${photo.objectKey}`,
+        url: `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_USER_DATA_DOMAIN || process.env.CLOUDFLARE_R2_USER_DATA_DOMAIN || 'https://cdn.rizzify.org'}/${photo.objectKey}`,
         createdAt: photo.createdAt,
         section: section,  // 关键：补齐section字段
         expiresAt: null    // 补齐expiresAt字段

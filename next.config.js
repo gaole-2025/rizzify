@@ -18,6 +18,12 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "cdn.rizzify.org",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "*.r2.dev",
       },
       {

@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < photos.length; i++) {
       const photo = photos[i]
       try {
-        const photoUrl = `https://rizzify.org/${photo.objectKey}` // 从 R2 存储下载
+        const photoUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_USER_DATA_DOMAIN || process.env.CLOUDFLARE_R2_USER_DATA_DOMAIN || 'https://cdn.rizzify.org'}/${photo.objectKey}` // 从 R2 存储下载
         const response = await fetch(photoUrl)
         
         if (!response.ok) {

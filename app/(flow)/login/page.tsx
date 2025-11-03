@@ -60,7 +60,8 @@ export default function LoginPage() {
     try {
       // DB 模式：使用 Supabase Auth Google OAuth
       const supabase = getSupabaseBrowserClient();
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      // 始终使用当前浏览器的域名，确保开发和生产环境都能正确重定向
+      const siteUrl = typeof window !== 'undefined' ? window.location.origin : "http://localhost:3000";
       const redirectTo = `${siteUrl}/auth/callback`;
 
       await supabase.auth.signInWithOAuth({

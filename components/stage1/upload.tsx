@@ -51,6 +51,8 @@ export default function UploadArea({
     const file = event.target.files?.[0];
     if (file) {
       onFileSelect(file);
+      // 🆕 重置文件输入值，允许重新选择同一文件
+      event.target.value = '';
     }
   };
 

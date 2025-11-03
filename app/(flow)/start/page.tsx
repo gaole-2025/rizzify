@@ -202,20 +202,18 @@ export default function StartPage() {
       return;
     }
 
-    // 检查是否已选择性别
     if (!selectedGender) {
       setShowGenderModal(true);
       return;
     }
 
     try {
-      // 🚀 本地处理 - 无需网络请求
       const meta = await buildMeta(file);
       const validation = validate(meta);
 
       setSelectedFile(meta);
       setHint(validation);
-      setPendingFile(file); // 🆕 存储原始文件对象，用于后续上传
+      setPendingFile(file);
 
       if (!validation.passed) {
         throw new Error(

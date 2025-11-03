@@ -86,7 +86,7 @@ export async function GET(
         createdAt: photo.createdAt,
         expiresAt: photo.expiresAt,
         // 生成访问URL（根据实际的存储配置）
-        url: `https://rizzify.org/${photo.objectKey}`
+        url: `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_USER_DATA_DOMAIN || process.env.CLOUDFLARE_R2_USER_DATA_DOMAIN || 'https://cdn.rizzify.org'}/${photo.objectKey}`
       })),
       // 结果统计
       stats: {
