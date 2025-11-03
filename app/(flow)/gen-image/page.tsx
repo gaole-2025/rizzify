@@ -6,6 +6,7 @@ import { PaymentSheet, PlansGrid } from "@/components/stage1/plans";
 import { ErrorBanner } from "@/components/stage1/common";
 import AIGenerationLoading from "@/components/stage1/AIGenerationLoading";
 import GenerationBanner from "@/components/stage1/GenerationBanner";
+import Modal from "@/components/stage1/Modal";
 import { generationMock } from "@/lib/stage1-data";
 import {
   createPaymentSession,
@@ -83,6 +84,7 @@ export default function GenImagePage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
+  const [showDevModal, setShowDevModal] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastIdempotency = useRef<string | null>(null);
   const pageViewTrackedRef = useRef(false);
@@ -423,6 +425,12 @@ export default function GenImagePage() {
       return;
     }
 
+    // 🚫 检查 start 和 pro 计划是否在开发中
+    if (code === 'start' || code === 'pro') {
+      setShowDevModal(true);
+      return;
+    }
+
     // 📊 埋点：套餐选择
     analytics.track(AnalyticsEvents.PLAN_SELECT, { plan: code });
 
@@ -542,6 +550,15 @@ export default function GenImagePage() {
         copy={paymentCopy}
         onClose={handlePaymentClose}
         onConfirm={handlePaymentConfirm}
+      />
+
+      <Modal
+        isOpen={showDevModal}
+        onClose={() => setShowDevModal(false)}
+        title="Coming Soon"
+        message="This plan is currently under development. Please check back soon after we complete our review process."
+        type="info"
+        confirmText="Got it"
       />
     </div>
   );
