@@ -62,11 +62,11 @@ export default function LoginPage() {
       const supabase = getSupabaseBrowserClient();
       // 始终使用当前浏览器的域名，确保开发和生产环境都能正确重定向
       const siteUrl = typeof window !== 'undefined' ? window.location.origin : "http://localhost:3000";
-      const redirectTo = `${siteUrl}/auth/callback`;
+      const callbackUrl = `${siteUrl}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`;
 
       await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo, queryParams: { prompt: "select_account" } },
+        options: { redirectTo: callbackUrl, queryParams: { prompt: "select_account" } },
       });
     } catch (err) {
       console.error("Google OAuth error:", err);
