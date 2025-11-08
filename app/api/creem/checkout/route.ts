@@ -88,7 +88,6 @@ export async function POST(request: NextRequest) {
       product_id: CREEM_PRODUCTS[plan as keyof typeof CREEM_PRODUCTS],
       request_id: requestId,
       success_url: `${baseUrl}/payment/success`,
-      cancel_url: `${baseUrl}/payment/cancel`,
       customer: {
         email: user.email,
       },
@@ -101,20 +100,20 @@ export async function POST(request: NextRequest) {
 
     const checkout = await creemClient.createCheckout(checkoutPayload);
 
-    // 7. 更新 Payment 记录，保存 checkout_id
+    // 7. 更新 Payment 记录，保存 checkout id
     await db.payment.update({
       where: { id: payment.id },
       data: {
-        creemCheckoutId: checkout.checkout_id,
+        creemCheckoutId: checkout.id,
       },
     });
 
-    console.log(`✅ Checkout created: ${checkout.checkout_id}`);
+    console.log(`✅ Checkout created: ${checkout.id}`);
 
     // 8. 返回 checkout URL
     return NextResponse.json({
       checkoutUrl: checkout.checkout_url,
-      checkoutId: checkout.checkout_id,
+      checkoutId: checkout.id,
       paymentId: payment.id,
     });
   } catch (error: any) {

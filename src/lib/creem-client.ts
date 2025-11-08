@@ -6,7 +6,6 @@ export interface CreemCheckoutPayload {
   product_id: string;
   request_id: string;
   success_url: string;
-  cancel_url?: string;
   customer?: {
     email?: string;
   };
@@ -14,12 +13,12 @@ export interface CreemCheckoutPayload {
 }
 
 export interface CreemCheckoutResponse {
-  checkout_id: string;
+  id: string;
   checkout_url: string;
-  product_id: string;
+  product?: string;
   request_id: string;
-  status: string;
-  created_at: string;
+  status?: string;
+  created_at?: string;
 }
 
 export interface CreemOrderResponse {
@@ -80,7 +79,7 @@ class CreemClient {
       }
 
       const data = await response.json();
-      console.log('✅ Creem checkout created:', data.checkout_id);
+      console.log('✅ Creem checkout created:', data.id);
       return data;
     } catch (error: any) {
       console.error('❌ Failed to create Creem checkout:', error.message);
