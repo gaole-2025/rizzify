@@ -4,7 +4,7 @@
 FROM node:20-slim
 
 # 安装必要的系统依赖（sharp 需要）
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowUnauthenticatedPackages=true && apt-get install -y --no-install-recommends \
     python3 \
     make \
     g++ \
