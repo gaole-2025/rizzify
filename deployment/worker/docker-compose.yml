@@ -1,11 +1,10 @@
-version: '3.8'
-
 services:
   rizzify-worker:
     build:
       context: ../..
       dockerfile: deployment/worker/Dockerfile
     container_name: rizzify-worker
+    network_mode: host
     restart: unless-stopped
     
     # 环境变量文件
