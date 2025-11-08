@@ -6,7 +6,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/src/db/client';
-import { enqueueTaskGeneration, startBossAndEnsureQueues } from '@/lib/queue';
 import { usersRepo, uploadsRepo, tasksRepo, quotasRepo } from '@/db/repo';
 import { v4 as uuidv4 } from 'uuid';
 import { authenticateUser, createAuthErrorResponse } from '@/src/lib/auth-helpers';
@@ -151,28 +150,8 @@ export async function POST(request: NextRequest) {
 
     const task = await tasksRepo.create(taskData);
 
-    // 确保队列已启动
-    await startBossAndEnsureQueues();
-
-    try {
-      // 发送任务到队列
-      await enqueueTaskGeneration({
-        taskId: task.id,
-        userId: upload.userId,
-        uploadId: upload.id,
-        plan: plan as any,
-        gender: gender as any,
-        style: 'classic',
-        fileKey: upload.objectKey,
-        idempotencyKey: finalIdempotencyKey
-      });
-    } catch (queueError) {
-      console.warn('⚠️ Failed to enqueue task immediately, Dispatcher will retry:', queueError);
-
-      // 不更新为错误状态，让 Dispatcher 稍后重试
-      // 任务已入库（状态为 queued），Dispatcher 会定期扫描并入队
-      console.log(`📋 Task ${task.id} will be picked up by Dispatcher for retry`);
-    }
+    // ✅ 任务已入库，Dispatcher 会定期扫描并投递到队列
+    console.log(`✅ Task ${task.id} created and will be picked up by Dispatcher`);
 
     return NextResponse.json({
       taskId: task.id,
