@@ -17,6 +17,7 @@ import {
 import { useDevAuth, useDevMocks, useDevPageState } from "@/components/dev/DevToolbar";
 import { writeLastTaskId } from "@/lib/stage2-storage";
 import { analytics, AnalyticsEvents } from '@/src/lib/analytics';
+import { initiateCreemCheckout } from '@/src/lib/creem-checkout';
 
 const UPLOAD_SESSION_KEY = "rizzify.stage2.upload";
 // 🚀 优化：轮询间隔从 1.2 秒增加到 5 秒，减少数据库查询
@@ -440,17 +441,18 @@ export default function GenImagePage() {
       return;
     }
 
-    // 🚫 检查 start 和 pro 计划是否在开发中
-    if (code === 'start' || code === 'pro') {
-      setShowDevModal(true);
-      return;
-    }
-
     // 📊 埋点：套餐选择
     analytics.track(AnalyticsEvents.PLAN_SELECT, { plan: code });
 
     setSelectedPlan(code);
-    // 🚀 优化：所有计划都直接跳过支付，直接开始生成
+
+    // 💳 start 和 pro 计划需要支付
+    if (code === 'start' || code === 'pro') {
+      initiateCreemCheckout(code);
+      return;
+    }
+
+    // 🚀 free 计划直接开始生成
     beginGeneration(code);
   };
 
