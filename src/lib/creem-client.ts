@@ -48,6 +48,8 @@ class CreemClient {
    */
   async createCheckout(payload: CreemCheckoutPayload): Promise<CreemCheckoutResponse> {
     try {
+      console.log('🔄 Creating Creem checkout with payload:', JSON.stringify(payload, null, 2));
+      
       const response = await fetch(`${this.baseUrl}/checkouts`, {
         method: 'POST',
         headers: {
@@ -57,9 +59,17 @@ class CreemClient {
         body: JSON.stringify(payload),
       });
 
+      console.log(`📊 Creem API response status: ${response.status}`);
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || `HTTP ${response.status}`);
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = { message: response.statusText };
+        }
+        console.error('❌ Creem API error response:', JSON.stringify(errorData, null, 2));
+        throw new Error(errorData.message || `HTTP ${response.status}`);
       }
 
       const data = await response.json();
