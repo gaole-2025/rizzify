@@ -8,9 +8,8 @@ RUN rm -rf /var/lib/apt/lists/*
 
 # 安装必要的系统依赖（sharp 需要）
 RUN apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowUnauthenticatedPackages=true && apt-get install -y --no-install-recommends \
+    build-essential \
     python3 \
-    make \
-    g++ \
     libcairo2-dev \
     libjpeg-dev \
     libpango1.0-dev \
