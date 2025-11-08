@@ -6,7 +6,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { enqueueTaskGeneration, startBossAndEnsureQueues } from '@/lib/queue';
 import { v4 as uuidv4 } from 'uuid';
 
 const prisma = new PrismaClient();
@@ -92,34 +91,6 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // ✅ 确保 boss 已启动 + 队列已创建（进程首次调用会做真实启动）
-    await startBossAndEnsureQueues();
-
-    try {
-      // ✅ 发送任务
-      await enqueueTaskGeneration({
-        taskId: task.id,
-        userId,
-        plan,
-        gender,
-        style,
-        fileKey,
-        idempotencyKey: finalIdempotencyKey
-      });
-    } catch (queueError) {
-      console.error('Failed to enqueue task:', queueError);
-
-      // 如果队列投递失败，更新任务状态为错误
-      await prisma.task.update({
-        where: { id: task.id },
-        data: {
-          status: 'error',
-          errorMessage: 'Failed to queue task for processing'
-        }
-      });
-
-      throw queueError;
-    }
 
     return NextResponse.json({
       success: true,

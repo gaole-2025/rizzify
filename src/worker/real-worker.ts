@@ -6,6 +6,7 @@
 import PgBoss from 'pg-boss';
 import { PrismaClient } from '@prisma/client';
 import { updateTaskStatus } from '../lib/queue';
+import { queueConfig } from '../lib/queue';
 import { promptSampler } from '../lib/prompt-sampler';
 import { apicoreClient } from '../lib/apicore-client';
 import { imageManager } from '../lib/image-manager';
@@ -20,7 +21,7 @@ const prisma = new PrismaClient({
 
 const WORKER_CONFIG = {
   name: 'task_generate',
-  teamSize: 8,  // 🚀 优化：增加为 8 个并行 worker（提升吞吐量 2 倍）
+  teamSize: 8,
   newJobCheckIntervalSeconds: 5,
 };
 
@@ -326,6 +327,87 @@ async function processImageGeneration(job: any): Promise<any> {
 /**
  * 启动 RealWorker
  */
+const DISPATCHER_ENABLED = (process.env.DISPATCHER_ENABLED ?? 'true') === 'true'
+const DISPATCHER_INTERVAL_MS = parseInt(process.env.DISPATCHER_INTERVAL_MS ?? '2000', 10)
+const DISPATCHER_BATCH_SIZE = parseInt(process.env.DISPATCHER_BATCH_SIZE ?? '50', 10)
+const DISPATCH_BASE_BACKOFF_MS = parseInt(process.env.DISPATCH_BASE_BACKOFF_MS ?? '5000', 10)
+const DISPATCH_MAX_BACKOFF_MS = parseInt(process.env.DISPATCH_MAX_BACKOFF_MS ?? '300000', 10)
+
+type Grabbed = {
+  id: string
+  userId: string
+  uploadId: string
+  fileKey: string
+  plan: 'free' | 'start' | 'pro'
+  gender: 'male' | 'female'
+  style: string
+  idempotencyKey: string | null
+  dispatchAttempts: number
+}
+
+function backoffSeconds(nextAttempts: number): number {
+  const secs = Math.floor((DISPATCH_BASE_BACKOFF_MS / 1000) * Math.pow(2, nextAttempts))
+  return Math.min(secs, Math.floor(DISPATCH_MAX_BACKOFF_MS / 1000))
+}
+
+function startDispatcher(boss: PgBoss, prisma: PrismaClient) {
+  if (!DISPATCHER_ENABLED) return
+  let running = false
+  setInterval(async () => {
+    if (running) return
+    running = true
+    try {
+      const rows = await prisma.$queryRaw<Grabbed[]>`
+        WITH grabbed AS (
+          SELECT t.id, t."userId", t."uploadId", u."objectKey" AS "fileKey", t.plan, t.gender, COALESCE(t.style, 'classic') AS style, t."idempotencyKey", t."dispatchAttempts"
+          FROM "Task" t
+          JOIN "Upload" u ON u.id = t."uploadId"
+          WHERE t."enqueuedAt" IS NULL AND t."nextDispatchAt" <= now()
+          ORDER BY t."createdAt"
+          FOR UPDATE SKIP LOCKED
+          LIMIT ${DISPATCHER_BATCH_SIZE}
+        )
+        UPDATE "Task" t
+        SET "nextDispatchAt" = now() + interval '120 seconds'
+        FROM grabbed
+        WHERE t.id = grabbed.id
+        RETURNING grabbed.id, grabbed."userId", grabbed."uploadId", grabbed."fileKey", grabbed.plan, grabbed.gender, grabbed.style, grabbed."idempotencyKey", grabbed."dispatchAttempts";
+      `
+      if (rows.length === 0) return
+      await boss.createQueue(queueConfig.jobs.task_generate.name)
+      for (const r of rows) {
+        try {
+          await boss.send(
+            queueConfig.jobs.task_generate.name,
+            {
+              taskId: r.id,
+              userId: r.userId,
+              uploadId: r.uploadId,
+              plan: r.plan,
+              gender: r.gender,
+              style: r.style,
+              fileKey: r.fileKey,
+              idempotencyKey: r.idempotencyKey ?? undefined,
+            }
+          )
+          await prisma.$executeRaw`UPDATE "Task" SET "enqueuedAt" = now() WHERE id = ${r.id}`
+        } catch (err) {
+          const next = backoffSeconds(r.dispatchAttempts + 1)
+          await prisma.$executeRaw`
+            UPDATE "Task"
+            SET "dispatchAttempts" = "dispatchAttempts" + 1,
+                "nextDispatchAt" = now() + ${next} * interval '1 second'
+            WHERE id = ${r.id}
+          `
+        }
+      }
+    } catch {}
+    finally {
+      running = false
+    }
+  }, DISPATCHER_INTERVAL_MS)
+}
+
 export async function startRealWorker(): Promise<PgBoss> {
   const boss = new PgBoss({
     connectionString: process.env.DIRECT_URL || process.env.DATABASE_URL,
@@ -335,16 +417,13 @@ export async function startRealWorker(): Promise<PgBoss> {
 
   try {
     console.log('[RealWorker] Starting real worker...');
-
     await boss.start();
-
-    // 注册 worker 处理 task_generate 队列
     boss.work(WORKER_CONFIG.name, processImageGeneration);
-
+    try { await boss.createQueue(queueConfig.jobs.task_generate.name) } catch {}
+    startDispatcher(boss, prisma)
     console.log('[RealWorker] Real worker started successfully');
     console.log(`[RealWorker] Team size: ${WORKER_CONFIG.teamSize}`);
     console.log(`[RealWorker] Check interval: ${WORKER_CONFIG.newJobCheckIntervalSeconds}s`);
-
     return boss;
   } catch (error) {
     console.error('[RealWorker] Failed to start worker:', error);

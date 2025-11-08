@@ -63,6 +63,12 @@ model Task {
   startedAt       DateTime?
   completedAt     DateTime?
   style           String?          @default("classic")
+  
+  // Dispatcher fields (minimal)
+  enqueuedAt      DateTime?
+  dispatchAttempts Int             @default(0)
+  nextDispatchAt  DateTime         @default(now())
+
   taskAudits      AuditLog[]       @relation("taskAudit")
   feedbackTickets FeedbackTicket[] @relation("TaskFeedback")
   photos          Photo[]
