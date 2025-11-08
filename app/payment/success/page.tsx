@@ -17,12 +17,7 @@ export default function PaymentSuccessPage() {
         const checkoutId = searchParams?.get('checkout_id');
         const orderId = searchParams?.get('order_id');
         const requestId = searchParams?.get('request_id');
-
-        if (!checkoutId && !orderId) {
-          setStatus('error');
-          setMessage('Missing payment information');
-          return;
-        }
+        // 即使缺少 URL 参数，也不阻止跳转
 
         // 可选：调用你的后端验证支付状态
         // const response = await fetch('/api/payment/verify', {
@@ -35,12 +30,16 @@ export default function PaymentSuccessPage() {
         // 由于 Webhook 是异步的，这里只显示成功提示
         // 真正的权限开通由 Webhook 处理
         setStatus('success');
-        setMessage('Payment completed! Your upgrade will be activated shortly.');
+        setMessage('Payment completed! Your generation task is starting...');
 
         // 3 秒后跳转回生成页面
         setTimeout(() => {
           router.push('/gen-image');
-        }, 3000);
+        }, 2000);
+        // 兜底：再过 2 秒使用硬跳转，确保一定到达生成页
+        setTimeout(() => {
+          try { window.location.replace('/gen-image') } catch {}
+        }, 4000);
       } catch (error) {
         console.error('Payment verification error:', error);
         setStatus('error');
@@ -49,7 +48,7 @@ export default function PaymentSuccessPage() {
     };
 
     checkPaymentStatus();
-  }, [searchParams, router]);
+  }, [router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black px-4">
