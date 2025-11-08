@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { loginMock } from "@/lib/stage1-data";
 import { ErrorBanner } from "@/components/stage1/common";
@@ -12,12 +12,7 @@ import { analytics, AnalyticsEvents } from '@/src/lib/analytics';
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectParam = searchParams?.get("redirect");
-  const redirectTo =
-    redirectParam && redirectParam.startsWith("/")
-      ? redirectParam
-      : loginMock.redirect.to;
+  const [redirectTo, setRedirectTo] = useState<string>(loginMock.redirect.to);
 
   const { state: pageState, setState: setPageState } = useDevPageState(
     "login",
@@ -34,6 +29,16 @@ export default function LoginPage() {
   // 📊 埋点：页面浏览
   useEffect(() => {
     analytics.pageView('/login')
+  }, [])
+
+  // 解析 URL 中的 redirect 参数（仅在客户端）
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const p = sp.get('redirect');
+      if (p && p.startsWith('/')) setRedirectTo(p);
+    } catch {}
   }, [])
 
   useEffect(() => {
