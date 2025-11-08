@@ -329,7 +329,7 @@ async function processImageGeneration(job: any): Promise<any> {
  * 启动 RealWorker
  */
 const DISPATCHER_ENABLED = (process.env.DISPATCHER_ENABLED ?? 'true') === 'true'
-const DISPATCHER_INTERVAL_MS = parseInt(process.env.DISPATCHER_INTERVAL_MS ?? '2000', 10)
+const DISPATCHER_INTERVAL_MS = parseInt(process.env.DISPATCHER_INTERVAL_MS ?? '10000', 10)
 const DISPATCHER_BATCH_SIZE = parseInt(process.env.DISPATCHER_BATCH_SIZE ?? '50', 10)
 const DISPATCH_BASE_BACKOFF_MS = parseInt(process.env.DISPATCH_BASE_BACKOFF_MS ?? '5000', 10)
 const DISPATCH_MAX_BACKOFF_MS = parseInt(process.env.DISPATCH_MAX_BACKOFF_MS ?? '300000', 10)
