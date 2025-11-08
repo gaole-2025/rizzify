@@ -99,6 +99,10 @@ export default function GenImagePage() {
     }
   }, []);
 
+  useEffect(() => {
+    // (moved below startPolling definition)
+  }, []);
+
   const chooseCopy = generationMock.chooseCopy;
   const plans = useMemo(() => generationMock.plans, []);
   const processingCopy = generationMock.processingView;
@@ -293,6 +297,43 @@ export default function GenImagePage() {
     [queueMock, router],
   );
 
+  // Restore any active task after startPolling is defined
+  useEffect(() => {
+    const restore = async () => {
+      try {
+        const { getSupabaseBrowserClient } = await import('@/src/lib/supabaseClient');
+        const supabase = getSupabaseBrowserClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        const userId = session?.user?.id;
+        if (!userId) return;
+        const headers: Record<string, string> = {};
+        const token = session?.access_token;
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const fetchActive = async (status: string) => {
+          const res = await fetch(`/api/users/${userId}/tasks?status=${status}&limit=1`, { headers, credentials: 'include' });
+          if (!res.ok) return null;
+          const json = await res.json();
+          const tasks = json?.data?.tasks || [];
+          return tasks.length ? tasks[0] : null;
+        };
+        let task = await fetchActive('queued');
+        if (!task) task = await fetchActive('running');
+        if (task) {
+          setView('processing');
+          setRuntime({
+            taskId: task.id,
+            status: task.status,
+            etaSeconds: task.etaSeconds ?? null,
+            progress: task.progress ?? null,
+            errorMessage: task.errorMessage ?? null,
+          });
+          startPolling(task.id);
+        }
+      } catch {}
+    };
+    restore();
+  }, [startPolling]);
+
   const resetToPlans = useCallback(() => {
     setSelectedPlan(null);
     setView("choose");
@@ -433,6 +474,24 @@ export default function GenImagePage() {
     [queueMock, startPolling, uploadSession],
   );
 
+  // 自动恢复：从支付成功返回后，如存在 resume 标记则触发生成
+  useEffect(() => {
+    const tryResume = async () => {
+      try {
+        const resume = window.sessionStorage.getItem('rizzify.resumeAfterPayment') === '1';
+        const pendingPlan = window.sessionStorage.getItem('rizzify.pendingPlan') as PlanCode | null;
+        if (!resume || !pendingPlan) return;
+        if (view !== 'processing' && uploadSession?.fileId && uploadSession?.gender) {
+          await beginGeneration(pendingPlan);
+        }
+      } catch {}
+      finally {
+        try { window.sessionStorage.removeItem('rizzify.resumeAfterPayment') } catch {}
+      }
+    };
+    tryResume();
+  }, [view, beginGeneration, uploadSession]);
+
   const handlePlanSelect = (code: PlanCode) => {
     if (isDisabled || isLoading) return;
 
@@ -448,6 +507,7 @@ export default function GenImagePage() {
 
     // 💳 start 和 pro 计划需要支付
     if (code === 'start' || code === 'pro') {
+      try { window.sessionStorage.setItem('rizzify.pendingPlan', code) } catch {}
       initiateCreemCheckout(code);
       return;
     }

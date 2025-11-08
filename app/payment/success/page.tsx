@@ -34,6 +34,7 @@ export default function PaymentSuccessPage() {
 
         // 3 秒后跳转回生成页面
         setTimeout(() => {
+          try { window.sessionStorage.setItem('rizzify.resumeAfterPayment', '1') } catch {}
           router.push('/gen-image');
         }, 2000);
         // 兜底：再过 2 秒使用硬跳转，确保一定到达生成页
