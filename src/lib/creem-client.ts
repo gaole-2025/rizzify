@@ -43,7 +43,7 @@ class CreemClient {
     this.apiKey = apiKey;
     // 根据 API 密钥前缀判断环境
     if (apiKey.startsWith('creem_test_')) {
-      this.baseUrl = 'https://api.sandbox.creem.io/v1';
+      this.baseUrl = 'https://test-api.creem.io/v1';
     } else {
       this.baseUrl = 'https://api.creem.io/v1';
     }
