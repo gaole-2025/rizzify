@@ -104,47 +104,32 @@ async function handleCheckoutCompleted(event: CreemWebhookEvent) {
 
   console.log(`✅ Payment ${payment.id} marked as succeeded`);
 
-  // 3. 自动触发生成任务
+  // 3. 自动创建生成任务
   if (payment.uploadId && payment.gender) {
     try {
-      console.log(`🚀 Triggering generation task for user ${payment.user.email}`);
+      console.log(`🚀 Creating generation task for user ${payment.user.email}`);
       
-      // 调用生成 API
-      const generationResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.rizzify.org'}/api/generation/start`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.INTERNAL_API_TOKEN || ''}`,
-          },
-          body: JSON.stringify({
-            plan: payment.plan,
-            gender: payment.gender,
-            fileId: payment.uploadId,
-            idempotencyKey: `payment_${payment.id}`,
-          }),
-        }
-      );
-
-      if (!generationResponse.ok) {
-        const error = await generationResponse.json();
-        console.error(`❌ Failed to trigger generation:`, error);
-        return;
-      }
-
-      const generationData = await generationResponse.json();
-      const taskId = generationData.taskId;
+      // 直接在数据库中创建 Task 记录
+      const task = await db.task.create({
+        data: {
+          userId: payment.userId,
+          uploadId: payment.uploadId,
+          plan: payment.plan as any,
+          gender: payment.gender as any,
+          style: 'classic',
+          idempotencyKey: `payment_${payment.id}`,
+        },
+      });
 
       // 保存 taskId 到 Payment 记录
       await db.payment.update({
         where: { id: payment.id },
-        data: { taskId },
+        data: { taskId: task.id },
       });
 
-      console.log(`✅ Generation task created: ${taskId} for payment ${payment.id}`);
+      console.log(`✅ Generation task created: ${task.id} for payment ${payment.id}`);
     } catch (err) {
-      console.error(`❌ Error triggering generation:`, err);
+      console.error(`❌ Error creating generation task:`, err);
     }
   }
 
