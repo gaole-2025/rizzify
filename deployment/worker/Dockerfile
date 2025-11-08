@@ -34,8 +34,8 @@ COPY docs ./docs
 COPY tsconfig.json ./
 
 # 创建非 root 用户
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 && \
+RUN groupadd -g 1001 nodejs && \
+    useradd -u 1001 -g nodejs nodejs && \
     chown -R nodejs:nodejs /app
 
 USER nodejs
