@@ -3,6 +3,9 @@
 
 FROM node:20-slim
 
+# 清理 apt 缓存以节省空间
+RUN rm -rf /var/lib/apt/lists/*
+
 # 安装必要的系统依赖（sharp 需要）
 RUN apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowUnauthenticatedPackages=true && apt-get install -y --no-install-recommends \
     python3 \
