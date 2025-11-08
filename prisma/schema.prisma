@@ -48,32 +48,29 @@ model Upload {
 }
 
 model Task {
-  id              String           @id @default(uuid())
-  userId          String
-  uploadId        String           @unique
-  plan            Plan
-  gender          Gender
-  status          TaskStatus
-  progress        Int?
-  etaSeconds      Int?
-  errorCode       String?
-  errorMessage    String?
-  idempotencyKey  String?
-  createdAt       DateTime         @default(now())
-  startedAt       DateTime?
-  completedAt     DateTime?
-  style           String?          @default("classic")
-  
-  // Dispatcher fields (minimal)
-  enqueuedAt      DateTime?
-  dispatchAttempts Int             @default(0)
-  nextDispatchAt  DateTime         @default(now())
-
-  taskAudits      AuditLog[]       @relation("taskAudit")
-  feedbackTickets FeedbackTicket[] @relation("TaskFeedback")
-  photos          Photo[]
-  upload          Upload           @relation("UploadTask", fields: [uploadId], references: [id])
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String           @id @default(uuid())
+  userId           String
+  uploadId         String           @unique
+  plan             Plan
+  gender           Gender
+  status           TaskStatus
+  progress         Int?
+  etaSeconds       Int?
+  errorCode        String?
+  errorMessage     String?
+  idempotencyKey   String?
+  createdAt        DateTime         @default(now())
+  startedAt        DateTime?
+  completedAt      DateTime?
+  style            String?          @default("classic")
+  enqueuedAt       DateTime?        @db.Timestamptz(6)
+  dispatchAttempts Int              @default(0)
+  nextDispatchAt   DateTime         @default(now()) @db.Timestamptz(6)
+  taskAudits       AuditLog[]       @relation("taskAudit")
+  feedbackTickets  FeedbackTicket[] @relation("TaskFeedback")
+  photos           Photo[]
+  upload           Upload           @relation("UploadTask", fields: [uploadId], references: [id])
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, idempotencyKey])
   @@index([userId, createdAt(sort: Desc)])
@@ -109,15 +106,12 @@ model Payment {
   amountUsd       Decimal   @db.Decimal(10, 2)
   provider        String
   status          PayStatus
-  providerRef     String?   // creem_order_id
-  
-  // Creem 专用字段
-  creemCheckoutId String?   // checkout_id（支付会话ID）
-  creemProductId  String?   // prod_xxx（产品ID）
-  requestId       String?   // 自己的订单追踪ID
-  
+  providerRef     String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  creemCheckoutId String?
+  creemProductId  String?
+  requestId       String?
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt(sort: Desc)])
@@ -176,6 +170,50 @@ model Health {
   @@schema("public")
 }
 
+model UserEvent {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId  String   @map("session_id") @db.VarChar(255)
+  userId     String?  @map("user_id")
+  eventType  String   @map("event_type") @db.VarChar(100)
+  eventData  Json?    @map("event_data")
+  pagePath   String?  @map("page_path") @db.VarChar(255)
+  referrer   String?  @db.VarChar(500)
+  userAgent  String?  @map("user_agent")
+  deviceType String?  @map("device_type") @db.VarChar(50)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("user_events")
+  @@schema("public")
+}
+
+model UserSession {
+  sessionId      String   @id @map("session_id") @db.VarChar(255)
+  userId         String?  @map("user_id")
+  firstPage      String?  @map("first_page") @db.VarChar(255)
+  lastPage       String?  @map("last_page") @db.VarChar(255)
+  referrer       String?  @db.VarChar(500)
+  utmSource      String?  @map("utm_source") @db.VarChar(100)
+  utmMedium      String?  @map("utm_medium") @db.VarChar(100)
+  utmCampaign    String?  @map("utm_campaign") @db.VarChar(100)
+  deviceType     String?  @map("device_type") @db.VarChar(50)
+  browser        String?  @db.VarChar(100)
+  os             String?  @db.VarChar(100)
+  startedAt      DateTime @default(now()) @map("started_at") @db.Timestamp(6)
+  lastActivityAt DateTime @default(now()) @map("last_activity_at") @db.Timestamp(6)
+  totalEvents    Int      @default(0) @map("total_events")
+  user           User?    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([userId])
+  @@index([startedAt])
+  @@map("user_sessions")
+  @@schema("public")
+}
+
 enum Plan {
   free
   start
@@ -225,49 +263,5 @@ enum TicketStatus {
   resolved
   rejected
 
-  @@schema("public")
-}
-
-model UserEvent {
-  id         String   @id @default(uuid()) @db.Uuid
-  sessionId  String   @map("session_id")
-  userId     String?  @map("user_id")
-  eventType  String   @map("event_type")
-  eventData  Json?    @map("event_data")
-  pagePath   String?  @map("page_path")
-  referrer   String?
-  userAgent  String?  @map("user_agent")
-  deviceType String?  @map("device_type")
-  createdAt  DateTime @default(now()) @map("created_at")
-  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([sessionId])
-  @@index([userId])
-  @@index([eventType])
-  @@index([createdAt])
-  @@map("user_events")
-  @@schema("public")
-}
-
-model UserSession {
-  sessionId      String   @id @map("session_id")
-  userId         String?  @map("user_id")
-  firstPage      String?  @map("first_page")
-  lastPage       String?  @map("last_page")
-  referrer       String?
-  utmSource      String?  @map("utm_source")
-  utmMedium      String?  @map("utm_medium")
-  utmCampaign    String?  @map("utm_campaign")
-  deviceType     String?  @map("device_type")
-  browser        String?
-  os             String?
-  startedAt      DateTime @default(now()) @map("started_at")
-  lastActivityAt DateTime @default(now()) @map("last_activity_at")
-  totalEvents    Int      @default(0) @map("total_events")
-  user           User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([startedAt])
-  @@map("user_sessions")
   @@schema("public")
 }
