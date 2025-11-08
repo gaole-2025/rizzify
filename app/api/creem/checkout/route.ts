@@ -35,12 +35,27 @@ export async function POST(request: NextRequest) {
 
     // 2. 解析请求体
     const body = await request.json();
-    const { plan } = body;
+    const { plan, uploadId, gender } = body;
 
     // 3. 验证计划
     if (!plan || !['start', 'pro'].includes(plan)) {
       return NextResponse.json(
         { error: 'Invalid plan. Must be "start" or "pro"' },
+        { status: 400 }
+      );
+    }
+
+    // 4. 验证生成所需的参数
+    if (!uploadId || !gender) {
+      return NextResponse.json(
+        { error: 'Missing required parameters: uploadId, gender' },
+        { status: 400 }
+      );
+    }
+
+    if (!['male', 'female'].includes(gender)) {
+      return NextResponse.json(
+        { error: 'Invalid gender. Must be "male" or "female"' },
         { status: 400 }
       );
     }
@@ -58,6 +73,8 @@ export async function POST(request: NextRequest) {
         status: 'pending',
         creemProductId: CREEM_PRODUCTS[plan as keyof typeof CREEM_PRODUCTS],
         requestId,
+        uploadId,
+        gender,
       },
     });
 

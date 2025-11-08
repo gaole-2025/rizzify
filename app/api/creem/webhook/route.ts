@@ -104,9 +104,50 @@ async function handleCheckoutCompleted(event: CreemWebhookEvent) {
 
   console.log(`✅ Payment ${payment.id} marked as succeeded`);
 
-  // 3. 用户权限开通逻辑
-  // 这里可以根据 payment.plan 给用户增加额度
-  // 例如：更新 DailyQuota、标记用户为 VIP 等
+  // 3. 自动触发生成任务
+  if (payment.uploadId && payment.gender) {
+    try {
+      console.log(`🚀 Triggering generation task for user ${payment.user.email}`);
+      
+      // 调用生成 API
+      const generationResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.rizzify.org'}/api/generation/start`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.INTERNAL_API_TOKEN || ''}`,
+          },
+          body: JSON.stringify({
+            plan: payment.plan,
+            gender: payment.gender,
+            fileId: payment.uploadId,
+            idempotencyKey: `payment_${payment.id}`,
+          }),
+        }
+      );
+
+      if (!generationResponse.ok) {
+        const error = await generationResponse.json();
+        console.error(`❌ Failed to trigger generation:`, error);
+        return;
+      }
+
+      const generationData = await generationResponse.json();
+      const taskId = generationData.taskId;
+
+      // 保存 taskId 到 Payment 记录
+      await db.payment.update({
+        where: { id: payment.id },
+        data: { taskId },
+      });
+
+      console.log(`✅ Generation task created: ${taskId} for payment ${payment.id}`);
+    } catch (err) {
+      console.error(`❌ Error triggering generation:`, err);
+    }
+  }
+
   console.log(`🎉 User ${payment.user.email} purchased plan: ${payment.plan}`);
 }
 

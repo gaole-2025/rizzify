@@ -109,14 +109,23 @@ model Payment {
   providerRef     String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  
+  // Creem 专用字段
   creemCheckoutId String?
   creemProductId  String?
   requestId       String?
+  
+  // 生成任务信息
+  uploadId        String?   // 上传的文件 ID
+  gender          String?   // male | female
+  taskId          String?   // 生成任务 ID（支付成功后创建）
+  
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([status])
   @@index([creemCheckoutId])
+  @@index([uploadId])
   @@schema("public")
 }
 

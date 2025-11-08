@@ -2,17 +2,48 @@
  * 前端 Creem 支付集成工具
  */
 
+export interface CreemCheckoutParams {
+  plan: 'start' | 'pro';
+  uploadId: string;
+  gender: 'male' | 'female';
+}
+
 /**
  * 发起 Creem 支付流程
  * @param plan 计划类型 ("start" | "pro")
+ * @param uploadId 上传的文件 ID
+ * @param gender 性别 ("male" | "female")
  */
-export async function initiateCreemCheckout(plan: 'start' | 'pro') {
+export async function initiateCreemCheckout(plan: 'start' | 'pro', uploadId?: string, gender?: string) {
   try {
+    // 获取 upload session 中的信息
+    const uploadSession = (() => {
+      if (typeof window === 'undefined') return null;
+      const stored = window.sessionStorage.getItem('rizzify.stage2.upload');
+      if (!stored) return null;
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return null;
+      }
+    })();
+
+    const finalUploadId = uploadId || uploadSession?.fileId;
+    const finalGender = gender || uploadSession?.gender;
+
+    if (!finalUploadId || !finalGender) {
+      throw new Error('Missing upload information. Please upload a photo first.');
+    }
+
     // 1. 调用后端创建 Checkout Session
     const response = await fetch('/api/creem/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan }),
+      body: JSON.stringify({ 
+        plan, 
+        uploadId: finalUploadId, 
+        gender: finalGender 
+      }),
     });
 
     if (!response.ok) {
