@@ -15,6 +15,7 @@ import { createPhotosInBatch } from '../lib/batch-photo-creator';
 import { watermarkProcessor } from '../lib/watermark-processor';
 import { quotasRepo } from '../db/repo/quotas.repo';
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const prisma = new PrismaClient({
   log: ['query', 'info', 'warn', 'error'],
 });
@@ -409,9 +410,10 @@ function startDispatcher(boss: PgBoss, prisma: PrismaClient) {
 }
 
 export async function startRealWorker(): Promise<PgBoss> {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
   const boss = new PgBoss({
     connectionString: process.env.DIRECT_URL || process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
+    ssl: true,
     application_name: 'rizzify-real-worker',
   });
 
