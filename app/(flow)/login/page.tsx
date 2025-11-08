@@ -64,6 +64,11 @@ export default function LoginPage() {
       const siteUrl = typeof window !== 'undefined' ? window.location.origin : "http://localhost:3000";
       const callbackUrl = `${siteUrl}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`;
 
+      // 记录登录后跳转路径，回调页优先从此读取，避免构建期使用 useSearchParams
+      if (typeof window !== 'undefined') {
+        try { sessionStorage.setItem('postAuthRedirect', redirectTo) } catch {}
+      }
+
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo: callbackUrl, queryParams: { prompt: "select_account" } },

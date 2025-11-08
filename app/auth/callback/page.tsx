@@ -1,13 +1,11 @@
 "use client"
 import { useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { getSupabaseBrowserClient } from '@/src/lib/supabaseClient'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
   const supabase = getSupabaseBrowserClient()
-  const sp = useSearchParams()
-  const redirect = sp.get('redirect') || '/start'
 
   useEffect(() => {
     // 如果 URL 中包含 code/state，supabase-js 会自动交换 session（detectSessionInUrl=true）
@@ -15,11 +13,21 @@ export default function AuthCallbackPage() {
     let alive = true
     supabase.auth.getSession().then(({ data }) => {
       if (!alive) return
+      const redirect = (() => {
+        if (typeof window !== 'undefined') {
+          const stored = sessionStorage.getItem('postAuthRedirect')
+          if (stored && stored.startsWith('/')) return stored
+          const sp = new URLSearchParams(window.location.search)
+          const qp = sp.get('redirect')
+          if (qp && qp.startsWith('/')) return qp
+        }
+        return '/start'
+      })()
       if (data.session) router.replace(redirect)
       else router.replace('/login')
     })
     return () => { alive = false }
-  }, [router, supabase, redirect])
+  }, [router, supabase])
 
   return <p>Signing you in…</p>
 }
