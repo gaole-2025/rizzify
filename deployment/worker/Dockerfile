@@ -23,8 +23,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# 安装生产依赖
-RUN npm ci --only=production
+# 安装所有依赖（包含 devDependencies，确保 tsx/sharp 可用）
+RUN npm ci
 
 # 生成 Prisma Client
 RUN npx prisma generate
@@ -46,5 +46,5 @@ USER nodejs
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD pgrep -f "start-real-worker" || exit 1
 
-# 启动 Worker
-CMD ["npx", "tsx", "src/worker/start-real-worker.ts"]
+# 启动 Worker（直接调用本地 tsx，避免 npx 运行时安装）
+CMD ["node", "node_modules/tsx/dist/cli.mjs", "src/worker/start-real-worker.ts"]
