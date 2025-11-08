@@ -167,15 +167,11 @@ export async function POST(request: NextRequest) {
         idempotencyKey: finalIdempotencyKey
       });
     } catch (queueError) {
-      console.error('Failed to enqueue task:', queueError);
+      console.warn('⚠️ Failed to enqueue task immediately, Dispatcher will retry:', queueError);
 
-      // 如果队列投递失败，更新任务状态为错误
-      await tasksRepo.updateStatus(task.id, {
-        status: 'error' as any,
-        errorMessage: 'Failed to queue task for processing'
-      });
-
-      throw queueError;
+      // 不更新为错误状态，让 Dispatcher 稍后重试
+      // 任务已入库（状态为 queued），Dispatcher 会定期扫描并入队
+      console.log(`📋 Task ${task.id} will be picked up by Dispatcher for retry`);
     }
 
     return NextResponse.json({
