@@ -3,6 +3,7 @@ const path = require("path");
 const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
+    qualities: [80, 85, 90],
     remotePatterns: [
       {
         protocol: "https",
@@ -86,12 +87,8 @@ const nextConfig = {
   // 禁用SWC压缩以避免worker问题
   compress: false,
   // 注意：Worker 在独立进程中运行（npm run worker），不使用 instrumentation
-  experimental: {
-    // 禁用可能导致worker问题的功能
-    serverComponentsExternalPackages: ["@prisma/client"],
-    // 完全禁用输出文件追踪以避免栈溢出
-    outputFileTracingRoot: undefined,
-  },
+  experimental: {},
+  serverExternalPackages: ["@prisma/client", "pg", "pg-boss", "pg-connection-string"],
 };
 
 // 禁用 TypeScript 检查以加快构建

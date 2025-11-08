@@ -327,10 +327,12 @@ function UploadedCard({
   onDelete,
 }: UploadedCardProps) {
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      disabled={disabled}
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => { if (!disabled) onSelect() }}
+      onKeyDown={(e) => { if (!disabled && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onSelect(); } }}
+      aria-disabled={disabled}
       className={clsx(
         "group relative overflow-hidden rounded-3xl border border-white/10 bg-black/20 text-left transition",
         disabled ? "cursor-not-allowed opacity-60" : "hover:border-white/30",
@@ -398,7 +400,7 @@ function UploadedCard({
           </div>
         )}
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -572,10 +574,12 @@ function ResultCard({
   }, [card.expiresAt, expired, expiresAt, now]);
 
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      disabled={disabled}
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => { if (!disabled) onSelect() }}
+      onKeyDown={(e) => { if (!disabled && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onSelect(); } }}
+      aria-disabled={disabled}
       className={clsx(
         "group relative overflow-hidden rounded-3xl border border-white/10 bg-black/20 text-left transition",
         disabled ? "cursor-not-allowed opacity-60" : "hover:border-white/30",
@@ -654,7 +658,7 @@ function ResultCard({
           </div>
         )}
       </div>
-    </button>
+    </div>
   );
 }
 

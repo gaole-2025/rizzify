@@ -203,7 +203,11 @@ export default function GenImagePage() {
             }
           }
         } catch (err) {
-          console.error(err);
+          if (err instanceof ApiError) {
+            console.warn('[Poll] API error while polling task status', { status: err.status, code: err.code })
+          } else {
+            console.error(err);
+          }
           if (pollRef.current) {
             clearInterval(pollRef.current);
             pollRef.current = null;
@@ -267,7 +271,11 @@ export default function GenImagePage() {
             clearInterval(adaptivePolling);
           }
         } catch (err) {
-          console.error(err);
+          if (err instanceof ApiError) {
+            console.warn('[Poll] API error while adaptive polling', { status: err.status, code: err.code })
+          } else {
+            console.error(err);
+          }
           clearInterval(adaptivePolling);
           const message =
             err instanceof ApiError
@@ -353,7 +361,14 @@ export default function GenImagePage() {
           startPolling(response.taskId);
         })
         .catch((err) => {
-          console.error("❌ Generation API failed:", err);
+          const isQuotaBusinessError = err instanceof ApiError && (
+            err.code === 'daily_quota_exceeded' || err.status === 429
+          )
+          if (isQuotaBusinessError) {
+            console.warn('[Generation] Daily quota exceeded', { status: err.status, code: err.code, retryAfter: err.retryAfterSeconds })
+          } else {
+            console.error('❌ Generation API failed:', err)
+          }
 
           let message = "Failed to start generation. Please try again.";
 
@@ -398,7 +413,7 @@ export default function GenImagePage() {
           }
 
           setErrorMessage(message);
-          setErrorCode(err.code || null);
+          setErrorCode((err as any)?.code || null);
           setRuntime((prev) =>
             prev
               ? {

@@ -18,7 +18,13 @@ interface TrackRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: TrackRequest = await request.json()
+    const raw = await request.text().catch(() => '')
+    let body: TrackRequest | null = null
+    try { body = raw ? JSON.parse(raw) as TrackRequest : null } catch {}
+    if (!body) {
+      // 空或无效 JSON：直接返回 200，避免噪声
+      return NextResponse.json({ success: true }, { status: 200 })
+    }
     const {
       sessionId,
       userId,

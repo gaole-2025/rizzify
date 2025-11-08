@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/src/components/AuthProvider";
 
@@ -36,26 +36,27 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const [mounted, setMounted] = useState(false)
+  // 1) 无条件注册：mounted gate
+  useEffect(() => { setMounted(true) }, [])
+
+  // 2) 无条件注册：鉴权重定向逻辑（在 effect 内判断 mounted）
   useEffect(() => {
-    // 如果认证状态还在加载中，不做任何操作
-    if (authState === "loading") {
-      return;
-    }
-
-    // 如果是公开路径，允许访问
-    if (isPublicPath(pathname)) {
-      return;
-    }
-
-    // 如果用户未登录且访问受保护的路径，跳转到登录页
+    if (!mounted) return
+    if (authState === "loading") return
+    if (isPublicPath(pathname)) return
     if (authState === "guest") {
       const loginUrl = `/login?redirect=${encodeURIComponent(pathname)}`;
       router.replace(loginUrl);
     }
-  }, [authState, pathname, router]);
+  }, [mounted, authState, pathname, router]);
 
-  // 如果认证状态还在加载中，显示加载状态
-  if (authState === "loading") {
+  // 3) 渲染分支
+  if (isPublicPath(pathname)) {
+    return <>{children}</>;
+  }
+
+  if (!mounted || authState === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
         <div className="text-center text-white">
@@ -66,12 +67,6 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
-  // 如果是公开路径，直接显示内容
-  if (isPublicPath(pathname)) {
-    return <>{children}</>;
-  }
-
-  // 如果用户未登录且访问受保护的路径，不显示内容（将会跳转到登录页）
   if (authState === "guest") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
@@ -83,6 +78,5 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
-  // 用户已登录，显示受保护的内容
   return <>{children}</>;
 }

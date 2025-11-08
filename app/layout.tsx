@@ -92,8 +92,15 @@ export default function RootLayout({
           data-domain="rizzify.org"
           src="https://stats.rizzify.org/js/script.js"
         />
+        <Script
+          id="pre-hydration-cleanup"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: "(function(){function c(){try{var n=document.getElementById('video-roll-root-mask');if(n){n.removeAttribute('id')}}catch(e){}}c();try{var o=new MutationObserver(function(m){for(var i=0;i<m.length;i++){var t=m[i];if(t.type==='attributes'&&t.attributeName==='id'){var el=t.target;if(el&&el.id==='video-roll-root-mask'){el.removeAttribute('id')}}if(t.type==='childList'){c()}}});o.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['id']});setTimeout(function(){o.disconnect()},2000)}catch(e){}})();",
+          }}
+        />
       </head>
-      <body className="antialiased">
+      <body suppressHydrationWarning className="antialiased">
         {/* Microsoft Clarity */}
         <Script
           id="clarity-script"
