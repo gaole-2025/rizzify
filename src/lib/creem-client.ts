@@ -2,8 +2,6 @@
  * Creem 支付 API 客户端
  */
 
-import axios, { AxiosInstance } from 'axios';
-
 export interface CreemCheckoutPayload {
   product_id: string;
   request_id: string;
@@ -38,19 +36,11 @@ export interface CreemOrderResponse {
 }
 
 class CreemClient {
-  private client: AxiosInstance;
   private apiKey: string;
   private baseUrl = 'https://api.creem.io/v1';
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
-    this.client = axios.create({
-      baseURL: this.baseUrl,
-      headers: {
-        'x-api-key': apiKey,
-        'Content-Type': 'application/json',
-      },
-    });
   }
 
   /**
@@ -58,12 +48,26 @@ class CreemClient {
    */
   async createCheckout(payload: CreemCheckoutPayload): Promise<CreemCheckoutResponse> {
     try {
-      const response = await this.client.post<CreemCheckoutResponse>('/checkouts', payload);
-      console.log('✅ Creem checkout created:', response.data.checkout_id);
-      return response.data;
+      const response = await fetch(`${this.baseUrl}/checkouts`, {
+        method: 'POST',
+        headers: {
+          'x-api-key': this.apiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Creem checkout created:', data.checkout_id);
+      return data;
     } catch (error: any) {
-      console.error('❌ Failed to create Creem checkout:', error.response?.data || error.message);
-      throw new Error(`Creem checkout error: ${error.response?.data?.message || error.message}`);
+      console.error('❌ Failed to create Creem checkout:', error.message);
+      throw new Error(`Creem checkout error: ${error.message}`);
     }
   }
 
@@ -72,11 +76,23 @@ class CreemClient {
    */
   async getOrder(orderId: string): Promise<CreemOrderResponse> {
     try {
-      const response = await this.client.get<CreemOrderResponse>(`/orders/${orderId}`);
-      return response.data;
+      const response = await fetch(`${this.baseUrl}/orders/${orderId}`, {
+        method: 'GET',
+        headers: {
+          'x-api-key': this.apiKey,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || `HTTP ${response.status}`);
+      }
+
+      return await response.json();
     } catch (error: any) {
-      console.error('❌ Failed to get Creem order:', error.response?.data || error.message);
-      throw new Error(`Creem order error: ${error.response?.data?.message || error.message}`);
+      console.error('❌ Failed to get Creem order:', error.message);
+      throw new Error(`Creem order error: ${error.message}`);
     }
   }
 
@@ -85,11 +101,23 @@ class CreemClient {
    */
   async getCheckout(checkoutId: string): Promise<CreemCheckoutResponse> {
     try {
-      const response = await this.client.get<CreemCheckoutResponse>(`/checkouts/${checkoutId}`);
-      return response.data;
+      const response = await fetch(`${this.baseUrl}/checkouts/${checkoutId}`, {
+        method: 'GET',
+        headers: {
+          'x-api-key': this.apiKey,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || `HTTP ${response.status}`);
+      }
+
+      return await response.json();
     } catch (error: any) {
-      console.error('❌ Failed to get Creem checkout:', error.response?.data || error.message);
-      throw new Error(`Creem checkout error: ${error.response?.data?.message || error.message}`);
+      console.error('❌ Failed to get Creem checkout:', error.message);
+      throw new Error(`Creem checkout error: ${error.message}`);
     }
   }
 }
