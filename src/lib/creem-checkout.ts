@@ -35,15 +35,28 @@ export async function initiateCreemCheckout(plan: 'start' | 'pro', uploadId?: st
       throw new Error('Missing upload information. Please upload a photo first.');
     }
 
-    // 1. 调用后端创建 Checkout Session
+    // 1. 获取认证 token
+    const { getSupabaseBrowserClient } = await import('@/src/lib/supabaseClient');
+    const supabase = getSupabaseBrowserClient();
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      throw new Error('Not authenticated. Please log in first.');
+    }
+
+    // 2. 调用后端创建 Checkout Session
     const response = await fetch('/api/creem/checkout', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
       body: JSON.stringify({ 
         plan, 
         uploadId: finalUploadId, 
         gender: finalGender 
       }),
+      credentials: 'include',
     });
 
     if (!response.ok) {
