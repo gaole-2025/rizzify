@@ -1,18 +1,19 @@
 # Rizzify Worker Dockerfile
 # 用于在服务器上运行 AI 图片生成 Worker
 
-FROM node:20-alpine
+FROM node:20-slim
 
 # 安装必要的系统依赖（sharp 需要）
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     make \
     g++ \
-    cairo-dev \
-    jpeg-dev \
-    pango-dev \
-    giflib-dev \
-    pixman-dev
+    libcairo2-dev \
+    libjpeg-dev \
+    libpango1.0-dev \
+    libgif-dev \
+    libpixman-1-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
